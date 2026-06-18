@@ -72,13 +72,40 @@ function buildServiceFromBody(body) {
 =           General Route handlers           =
 =============================================*/
 
-
 // GET /api/services
-// Return every service record in the "services" collection as a JSON array.
-// (No filters yet — that comes in a later step.)
+// Return service records as a JSON array. Optional filters can be passed as
+// query-string params (e.g. /api/services?vehicleId=car-1). With no filters,
+// returns everything.
 router.get("/", async (req, res) => {
   try {
-    const services = await servicesCollection().find().toArray();
+    // Build a MongoDB query object. It starts empty (= match everything) and
+    // we add a condition only for each filter that was actually provided.
+    const query = {};
+
+    // Filter by vehicle: /api/services?vehicleId=car-1
+    if (req.query.vehicleId) {
+      query.vehicleId = req.query.vehicleId;
+    }
+
+    // Filter by service type: /api/services?serviceType=brakes
+    if (req.query.serviceType) {
+      query.serviceType = req.query.serviceType;
+    }
+
+    // Filter by date range: /api/services?from=2026-01-01&to=2026-06-30
+    // Dates are stored as "YYYY-MM-DD" strings, which compare correctly as text.
+    // $gte = on or after `from`; $lte = on or before `to`. Either end is optional.
+    if (req.query.from || req.query.to) {
+      query.date = {};
+      if (req.query.from) {
+        query.date.$gte = req.query.from;
+      }
+      if (req.query.to) {
+        query.date.$lte = req.query.to;
+      }
+    }
+
+    const services = await servicesCollection().find(query).toArray();
     console.log("GET /api/services succeeded:", services.length, "records");
     res.json(services);
   } catch (error) {
@@ -119,13 +146,13 @@ router.post("/", async (req, res) => {
 =            GET/PUT/DELETE Single Records          =
 =============================================*/
 
-
 // GET /api/services/:id
 // Return a single service record by its id.
 // requireValidId runs first and puts the converted id on req.objectId.
 router.get("/:id", requireValidId, async (req, res) => {
   try {
     const service = await servicesCollection().findOne({ _id: req.objectId });
+    console.log("GET /api/services/:id:", service ? "found" : "not found");
     if (!service) {
       return res.status(404).json({ error: "Service not found" });
     }
@@ -150,6 +177,7 @@ router.put("/:id", requireValidId, async (req, res) => {
       { _id: req.objectId },
       { $set: updatedFields },
     );
+    console.log("PUT /api/services/:id matched:", result.matchedCount);
 
     // matchedCount is 0 when no document had that id.
     if (result.matchedCount === 0) {
@@ -169,6 +197,7 @@ router.put("/:id", requireValidId, async (req, res) => {
 router.delete("/:id", requireValidId, async (req, res) => {
   try {
     const result = await servicesCollection().deleteOne({ _id: req.objectId });
+    console.log("DELETE /api/services/:id deleted:", result.deletedCount);
 
     // deletedCount is 0 when no document had that id.
     if (result.deletedCount === 0) {
