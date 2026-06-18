@@ -9,10 +9,11 @@
 async function MyFrontEnd() {
   // --- fetching -----------------------------------------------------------
 
-  // GET the service records. Returns [] (and logs) if the request fails, so
-  // the rest of the page still runs.
-  async function fetchServices() {
-    const res = await fetch("/api/services");
+  // GET the service records. `query` is an optional query string (e.g.
+  // "?serviceType=brakes") built from the filters. Returns [] (and logs) if the
+  // request fails, so the rest of the page still runs.
+  async function fetchServices(query = "") {
+    const res = await fetch("/api/services" + query);
     if (!res.ok) {
       console.error("Error fetching services:", res.statusText);
       return [];
@@ -115,16 +116,68 @@ async function MyFrontEnd() {
     console.log("Displayed services with", services.length, "entries");
   }
 
+  // --- filters ------------------------------------------------------------
+
+  // Read the filter fields and build a "?...=..." query string for the API.
+  // Only fields with a value are included (empty = no filter on that field).
+  // Returns { query, error }: error is set when the typed vehicle nickname
+  // doesn't match any vehicle (empty vehicle is fine = all vehicles).
+  function buildServiceQuery() {
+    const params = new URLSearchParams();
+
+    // Vehicle: the input holds a typed NICKNAME; convert it to the _id the API
+    // wants. Empty = all vehicles. A non-empty, unmatched nickname is an error.
+    const typedNickname = document.getElementById("filter-vehicle").value.trim();
+    if (typedNickname) {
+      const match = vehicles.find((v) => v.nickname === typedNickname);
+      if (!match) {
+        return { query: "", error: `No vehicle named "${typedNickname}".` };
+      }
+      params.set("vehicleId", match._id);
+    }
+
+    const type = document.getElementById("filter-type").value;
+    if (type) params.set("serviceType", type);
+
+    const from = document.getElementById("filter-from").value;
+    if (from) params.set("from", from);
+
+    const to = document.getElementById("filter-to").value;
+    if (to) params.set("to", to);
+
+    const qs = params.toString();
+    return { query: qs ? "?" + qs : "", error: "" };
+  }
+
   // --- run ----------------------------------------------------------------
 
-  // Re-fetch just the services and redraw the table. Call this again whenever
-  // the data changes (after add/edit/delete later) to refresh the list.
+  // Re-fetch the services using the current filters and redraw the table. Call
+  // again whenever the data changes (after add/edit/delete later).
   async function refreshServices() {
-    const services = await fetchServices();
+    // Build the query string from the filter fields.
+    // if invalid nickname is entered, the error will be caught and displayed.
+    const { query, error } = buildServiceQuery();
+    const errorBox = document.getElementById("filter-error");
+
+    // Bad vehicle filter: show the message and don't fetch.
+    if (error) {
+      errorBox.textContent = error;
+      return;
+    }
+    errorBox.textContent = "";
+
+    // Fetch the services with the query string.
+    const services = await fetchServices(query);
     console.log("Loaded", services.length, "services");
     displayServices(services, nameById);
-    console.log("Refreshed services display");
   }
+
+  // Apply button: re-run the fetch with the current filters. preventDefault
+  // stops the form from reloading the page.
+  document.getElementById("filter-form").addEventListener("submit", (event) => {
+    event.preventDefault();
+    refreshServices();
+  });
 
   // Initial load: get vehicles once, set up the datalist + name map, then
   // load the services.
