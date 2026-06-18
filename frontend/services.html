@@ -36,7 +36,10 @@
           <ul class="navbar-nav ms-auto">
             <li class="nav-item">
               <!-- aria-current marks this as the page we're on. -->
-              <a class="nav-link active" aria-current="page" href="services.html"
+              <a
+                class="nav-link active"
+                aria-current="page"
+                href="services.html"
                 >Services</a
               >
             </li>
@@ -90,24 +93,38 @@
               </div>
             </form>
 
-            <!-- Rows go in <tbody> via JS later. -->
-            <table class="table table-striped">
-              <thead>
-                <tr>
-                  <th>Vehicle</th>
-                  <th>Date</th>
-                  <th>Type</th>
-                  <th>Mileage</th>
-                  <th>Cost</th>
-                  <th>Shop</th>
-                  <th>Rating</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody id="services-tbody">
-                <!-- service rows rendered here later -->
-              </tbody>
-            </table>
+            <!-- Rows go in <tbody> via JS later. table-responsive wraps the
+                 table so it scrolls sideways instead of overflowing its column
+                 on narrow screens. -->
+            <div class="table-responsive">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>Vehicle</th>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Mileage</th>
+                    <th>Cost</th>
+                    <th>Shop</th>
+                    <th>Rating</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="services-tbody">
+                  <!-- service rows rendered here later -->
+                  <tr>
+                    <td>No services found.</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </section>
 
           <!-- All three reports are one logical group: one section, one h2,
@@ -128,18 +145,20 @@
                   # Services
                 </button>
               </div>
-              <table class="table table-striped table-sm">
-                <thead>
-                  <tr>
-                    <th>Vehicle</th>
-                    <th>Total Spend</th>
-                    <th># Services</th>
-                  </tr>
-                </thead>
-                <tbody id="by-vehicle-tbody">
-                  <!-- rows rendered here later -->
-                </tbody>
-              </table>
+              <div class="table-responsive">
+                <table class="table table-striped table-sm">
+                  <thead>
+                    <tr>
+                      <th>Vehicle</th>
+                      <th>Total Spend</th>
+                      <th># Services</th>
+                    </tr>
+                  </thead>
+                  <tbody id="by-vehicle-tbody">
+                    <!-- rows rendered here later -->
+                  </tbody>
+                </table>
+              </div>
             </div>
 
             <!-- Report: total spend per month, for a chosen year. -->
@@ -149,22 +168,27 @@
                    (the years present in the YYYY-MM keys). -->
               <div class="mt-3 mb-3">
                 <label for="monthly-year" class="form-label me-2">Year</label>
-                <select id="monthly-year" class="form-select d-inline-block w-auto">
+                <select
+                  id="monthly-year"
+                  class="form-select d-inline-block w-auto"
+                >
                   <!-- <option> years added in JS -->
                 </select>
               </div>
-              <table class="table table-striped table-sm">
-                <thead>
-                  <tr>
-                    <th>Month</th>
-                    <th>Total Spend</th>
-                    <th># Services</th>
-                  </tr>
-                </thead>
-                <tbody id="monthly-tbody">
-                  <!-- rows rendered here later -->
-                </tbody>
-              </table>
+              <div class="table-responsive">
+                <table class="table table-striped table-sm">
+                  <thead>
+                    <tr>
+                      <th>Month</th>
+                      <th>Total Spend</th>
+                      <th># Services</th>
+                    </tr>
+                  </thead>
+                  <tbody id="monthly-tbody">
+                    <!-- rows rendered here later -->
+                  </tbody>
+                </table>
+              </div>
             </div>
 
             <!-- Report: vehicles due for service soon, filtered by status. -->
@@ -174,26 +198,31 @@
                    (<0 overdue, 0–1000 due soon, >1000 ok). -->
               <div class="mt-3 mb-3">
                 <label for="due-status" class="form-label me-2">Status</label>
-                <select id="due-status" class="form-select d-inline-block w-auto">
+                <select
+                  id="due-status"
+                  class="form-select d-inline-block w-auto"
+                >
                   <option value="all">All</option>
                   <option value="overdue">Overdue</option>
                   <option value="due-soon">Due soon</option>
                   <option value="ok">OK</option>
                 </select>
               </div>
-              <table class="table table-striped table-sm">
-                <thead>
-                  <tr>
-                    <th>Vehicle</th>
-                    <th>Current Mileage</th>
-                    <th>Due At</th>
-                    <th>Miles Left</th>
-                  </tr>
-                </thead>
-                <tbody id="due-soon-tbody">
-                  <!-- rows rendered here later -->
-                </tbody>
-              </table>
+              <div class="table-responsive">
+                <table class="table table-striped table-sm">
+                  <thead>
+                    <tr>
+                      <th>Vehicle</th>
+                      <th>Current Mileage</th>
+                      <th>Due At</th>
+                      <th>Miles Left</th>
+                    </tr>
+                  </thead>
+                  <tbody id="due-soon-tbody">
+                    <!-- rows rendered here later -->
+                  </tbody>
+                </table>
+              </div>
             </div>
           </section>
         </div>
@@ -255,7 +284,9 @@
               </div>
 
               <div class="mb-3">
-                <label for="form-cost" class="form-label">Cost of Service</label>
+                <label for="form-cost" class="form-label"
+                  >Cost of Service</label
+                >
                 <input
                   id="form-cost"
                   type="number"
