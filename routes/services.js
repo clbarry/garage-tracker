@@ -234,7 +234,11 @@ router.get("/summary/monthly", async (req, res) => {
 router.get("/summary/due-soon", async (req, res) => {
   try {
     const dueSoon = await db.getDueSoon();
-    console.log("GET /api/services/summary/due-soon:", dueSoon.length, "vehicles");
+    console.log(
+      "GET /api/services/summary/due-soon:",
+      dueSoon.length,
+      "vehicles",
+    );
     res.json(dueSoon);
   } catch (error) {
     console.error("GET /api/services/summary/due-soon failed:", error.message);

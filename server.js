@@ -12,9 +12,9 @@ const PORT = 3000;
 // Let Express understand JSON request bodies (e.g. when the form sends data).
 app.use(express.json());
 
-// Serve everything in the public/ folder to the browser.
-// Visiting http://localhost:3000/services.html will load public/services.html.
-app.use(express.static("public"));
+// Serve everything in the frontend/ folder to the browser.
+// Visiting http://localhost:3000/services.html will load frontend/services.html.
+app.use(express.static("frontend"));
 
 // A tiny test route so we can confirm the server is alive.
 // Visit http://localhost:3000/api/test to check.

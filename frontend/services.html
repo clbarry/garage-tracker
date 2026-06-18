@@ -110,59 +110,91 @@
             </table>
           </section>
 
-          <!-- Report: total spend per vehicle. -->
-          <section>
-            <h2>Spend by Vehicle</h2>
-            <!-- Sort buttons (re-sort the data in JS, then re-render). -->
-            <button type="button">Sort by total spend</button>
-            <button type="button">Sort by # services</button>
-            <table>
-              <thead>
-                <tr>
-                  <th>Vehicle</th>
-                  <th>Total Spend</th>
-                  <th># Services</th>
-                </tr>
-              </thead>
-              <tbody id="by-vehicle-tbody">
-                <!-- rows rendered here later -->
-              </tbody>
-            </table>
-          </section>
+          <!-- All three reports are one logical group: one section, one h2,
+               and an h3 per report. -->
+          <section class="border rounded p-3 mb-4 summary-reports">
+            <h2>Summary Reports</h2>
 
-          <!-- Report: total spend per month. -->
-          <section>
-            <h2>Spend by Month</h2>
-            <table>
-              <thead>
-                <tr>
-                  <th>Month</th>
-                  <th>Total Spend</th>
-                  <th># Services</th>
-                </tr>
-              </thead>
-              <tbody id="monthly-tbody">
-                <!-- rows rendered here later -->
-              </tbody>
-            </table>
-          </section>
+            <!-- Report: total spend per vehicle. -->
+            <div class="border rounded p-3 mb-4">
+              <h3>Spend by Vehicle</h3>
+              <!-- Sort buttons (wired in JS later). -->
+              <div class="mt-3 mb-3">
+                <span class="me-2">Sort by:</span>
+                <button type="button" class="btn btn-sm btn-dark">
+                  Total spend
+                </button>
+                <button type="button" class="btn btn-sm btn-dark">
+                  # Services
+                </button>
+              </div>
+              <table class="table table-striped table-sm">
+                <thead>
+                  <tr>
+                    <th>Vehicle</th>
+                    <th>Total Spend</th>
+                    <th># Services</th>
+                  </tr>
+                </thead>
+                <tbody id="by-vehicle-tbody">
+                  <!-- rows rendered here later -->
+                </tbody>
+              </table>
+            </div>
 
-          <!-- Report: vehicles due for service soon. -->
-          <section>
-            <h2>Due Soon</h2>
-            <table>
-              <thead>
-                <tr>
-                  <th>Vehicle</th>
-                  <th>Current Mileage</th>
-                  <th>Due At</th>
-                  <th>Miles Left</th>
-                </tr>
-              </thead>
-              <tbody id="due-soon-tbody">
-                <!-- rows rendered here later -->
-              </tbody>
-            </table>
+            <!-- Report: total spend per month, for a chosen year. -->
+            <div class="border rounded p-3 mb-4">
+              <h3>Spend by Month</h3>
+              <!-- Year dropdown. Options are filled by JS from the data
+                   (the years present in the YYYY-MM keys). -->
+              <div class="mt-3 mb-3">
+                <label for="monthly-year" class="form-label me-2">Year</label>
+                <select id="monthly-year" class="form-select d-inline-block w-auto">
+                  <!-- <option> years added in JS -->
+                </select>
+              </div>
+              <table class="table table-striped table-sm">
+                <thead>
+                  <tr>
+                    <th>Month</th>
+                    <th>Total Spend</th>
+                    <th># Services</th>
+                  </tr>
+                </thead>
+                <tbody id="monthly-tbody">
+                  <!-- rows rendered here later -->
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Report: vehicles due for service soon, filtered by status. -->
+            <div class="border rounded p-3">
+              <h3>Due Soon</h3>
+              <!-- Status dropdown. Status is computed in JS from milesLeft
+                   (<0 overdue, 0–1000 due soon, >1000 ok). -->
+              <div class="mt-3 mb-3">
+                <label for="due-status" class="form-label me-2">Status</label>
+                <select id="due-status" class="form-select d-inline-block w-auto">
+                  <option value="all">All</option>
+                  <option value="overdue">Overdue</option>
+                  <option value="due-soon">Due soon</option>
+                  <option value="ok">OK</option>
+                </select>
+              </div>
+              <table class="table table-striped table-sm">
+                <thead>
+                  <tr>
+                    <th>Vehicle</th>
+                    <th>Current Mileage</th>
+                    <th>Due At</th>
+                    <th>Miles Left</th>
+                  </tr>
+                </thead>
+                <tbody id="due-soon-tbody">
+                  <!-- rows rendered here later -->
+                </tbody>
+              </table>
+            </div>
           </section>
         </div>
 
@@ -170,39 +202,99 @@
         <div class="col-md-4">
           <!-- Add/Edit form. One form does both: empty = add (POST); clicking
                Edit on a row fills it and switches to update (PUT). Wired in JS. -->
-          <section>
+          <section class="border rounded p-3">
             <h2>Add / Edit a Service</h2>
             <form id="service-form">
-              <label for="form-vehicle">Vehicle</label>
-              <select id="form-vehicle">
-                <option value="">Select a vehicle…</option>
-              </select>
+              <div class="mb-3">
+                <label for="form-vehicle" class="form-label">Vehicle</label>
+                <select id="form-vehicle" class="form-select">
+                  <option value="">Select a vehicle…</option>
+                </select>
+              </div>
 
-              <label for="form-date">Date</label>
-              <input id="form-date" type="date" />
+              <div class="mb-3">
+                <label for="form-date" class="form-label">Date</label>
+                <input id="form-date" type="date" class="form-control" />
+              </div>
 
-              <label for="form-type">Service Type</label>
-              <input id="form-type" type="text" />
+              <div class="mb-3">
+                <label for="form-type" class="form-label">Service Type</label>
+                <!-- Fixed list of service types; "other" reveals a free-text box
+                     (show/hide wired in JS later). -->
+                <select id="form-type" class="form-select">
+                  <option value="">Select a type…</option>
+                  <option value="oil change">Oil change</option>
+                  <option value="tire rotation">Tire rotation</option>
+                  <option value="brakes">Brakes</option>
+                  <option value="battery">Battery</option>
+                  <option value="inspection">Inspection</option>
+                  <option value="repair">Repair</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
 
-              <label for="form-mileage">Mileage</label>
-              <input id="form-mileage" type="number" />
+              <!-- Custom type, only used/shown when "other" is selected.
+                   Starts hidden (Bootstrap d-none); JS toggles it. -->
+              <div class="mb-3 d-none" id="form-type-other-wrap">
+                <label for="form-type-other" class="form-label"
+                  >Custom type</label
+                >
+                <input
+                  id="form-type-other"
+                  type="text"
+                  class="form-control"
+                  placeholder="Enter the service type"
+                />
+              </div>
 
-              <label for="form-cost">Cost</label>
-              <input id="form-cost" type="number" step="0.01" />
+              <div class="mb-3">
+                <label for="form-mileage" class="form-label"
+                  >Mileage at Service</label
+                >
+                <input id="form-mileage" type="number" class="form-control" />
+              </div>
 
-              <label for="form-interval">Interval</label>
-              <input id="form-interval" type="number" />
+              <div class="mb-3">
+                <label for="form-cost" class="form-label">Cost of Service</label>
+                <input
+                  id="form-cost"
+                  type="number"
+                  step="0.01"
+                  class="form-control"
+                />
+              </div>
 
-              <label for="form-rating">Rating (1–5)</label>
-              <input id="form-rating" type="number" min="1" max="5" />
+              <div class="mb-3">
+                <label for="form-interval" class="form-label"
+                  >Recommended Interval to Next Service</label
+                >
+                <input id="form-interval" type="number" class="form-control" />
+              </div>
 
-              <label for="form-shop">Shop</label>
-              <input id="form-shop" type="text" />
+              <div class="mb-3">
+                <label for="form-rating" class="form-label"
+                  >Service Rating (1–5)</label
+                >
+                <input id="form-rating" type="number" class="form-control" />
+              </div>
 
-              <label for="form-notes">Notes</label>
-              <textarea id="form-notes" rows="2"></textarea>
+              <div class="mb-3">
+                <label for="form-shop" class="form-label">Shop Name</label>
+                <input id="form-shop" type="text" class="form-control" />
+              </div>
 
-              <button type="submit">Save</button>
+              <div class="mb-3">
+                <label for="form-notes" class="form-label"
+                  >Additional Notes (optional)</label
+                >
+                <textarea
+                  id="form-notes"
+                  rows="2"
+                  class="form-control"
+                ></textarea>
+              </div>
+
+              <button type="submit" class="btn btn-primary">Save</button>
             </form>
           </section>
         </div>

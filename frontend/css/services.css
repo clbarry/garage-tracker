@@ -1,4 +1,8 @@
 body {
-    font-family: Arial, sans-serif;
-    background-color: beige;
+  font-family: Arial, sans-serif;
+  background-color: beige;
+}
+
+h2 {
+  text-align: center;
 }
