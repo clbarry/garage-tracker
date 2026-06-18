@@ -40,56 +40,112 @@ function requireValidId(req, res, next) {
   next();
 }
 
-// Convert a numeric form value into a number, but treat an empty/missing
-// value as null (our "no value entered" signifier) instead of 0.
-// A real 0 sent by the user is preserved.
-function toNumberOrNull(value) {
+// num: turn a form value into a number, but treat empty/missing as null (our
+// "not entered" marker). A real 0 is preserved.
+function num(value) {
   if (value === "" || value === undefined || value === null) {
     return null;
   }
   return Number(value);
 }
 
+// money: same as num(), but rounded to 2 decimal places so we never store
+// fractions of a cent (e.g. 49.999 -> 50). null stays null.
+function money(value) {
+  const n = num(value);
+  return n === null ? null : Math.round(n * 100) / 100;
+}
+
 // Build a clean service document from a request body. Used by BOTH POST and
-// PUT so the field shape and the empty-handling live in exactly one place.
-// vehicleId is the foreign key to vehicles._id, which is an ObjectId, so we
-// convert the incoming string to an ObjectId here. toObjectId returns null if
-// it's missing or not a valid id; the POST/PUT handlers reject that with a 400.
+// PUT so the field shape lives in one place. This step only SHAPES the data
+// (string -> number, empty -> null, round money); validateService judges it
+// afterward. vehicleId becomes an ObjectId, or null if missing/invalid.
 function buildServiceFromBody(body) {
   return {
     vehicleId: toObjectId(body.vehicleId),
     date: body.date,
     serviceType: body.serviceType,
-    mileageAtService: toNumberOrNull(body.mileageAtService),
-    cost: toNumberOrNull(body.cost),
-    recommendedInterval: toNumberOrNull(body.recommendedInterval),
+    mileageAtService: num(body.mileageAtService),
+    cost: money(body.cost),
+    recommendedInterval: num(body.recommendedInterval),
     shopName: body.shopName,
-    serviceRating: toNumberOrNull(body.serviceRating),
+    serviceRating: num(body.serviceRating),
     notes: body.notes,
   };
 }
 
+// The minimum a recommendedInterval is allowed to be. Real-world service
+// intervals are thousands of miles; our seed data ranges 3000–10000, so we
+// reject anything below this as a data-entry mistake (0 used to slip in).
+const MIN_RECOMMENDED_INTERVAL = 3000;
+
 // Validate a built service document. Returns an error message string if it's
 // invalid, or null if it's fine. Shared by POST and PUT so the rules live in
 // one place. (`doc` is the object from buildServiceFromBody.)
+//
+// Everything is required EXCEPT notes. Numbers were run through num()/money()
+// in buildServiceFromBody, so a missing/empty number arrives here as null (and
+// a non-numeric value as NaN); both count as "not provided".
 function validateService(doc) {
-  // The minimum a recommendedInterval is allowed to be. Real-world service
-  // intervals are thousands of miles; our seed data ranges 3000–10000, so we
-  // reject anything below this as a data-entry mistake (0 used to slip in).
-  const MIN_RECOMMENDED_INTERVAL = 3000;
-
+  // --- required text fields ---
   // vehicleId is null when it was missing OR not a valid ObjectId.
   if (!doc.vehicleId) {
     return "A valid vehicleId is required";
   }
-  // recommendedInterval may be null (not provided) — that's allowed — but if a
-  // value WAS given, it must be a sensible positive interval.
+  if (!doc.date) {
+    return "Date is required";
+  }
+  if (!doc.serviceType) {
+    return "Service type is required";
+  }
+  if (!doc.shopName) {
+    return "Shop name is required";
+  }
+
+  // --- required numbers ---
+  // mileageAtService: required, a whole number 0 or more (0 is a valid reading).
+  if (doc.mileageAtService === null || Number.isNaN(doc.mileageAtService)) {
+    return "Mileage at service is required";
+  }
+  if (!Number.isInteger(doc.mileageAtService) || doc.mileageAtService < 0) {
+    return "Mileage at service must be a whole number, 0 or more";
+  }
+
+  // cost: required, 0 or more.
+  if (doc.cost === null || Number.isNaN(doc.cost)) {
+    return "Cost is required";
+  }
+  if (doc.cost < 0) {
+    return "Cost cannot be negative";
+  }
+
+  // recommendedInterval: required, a whole number at least MIN_RECOMMENDED_INTERVAL.
   if (
-    doc.recommendedInterval !== null &&
+    doc.recommendedInterval === null ||
+    Number.isNaN(doc.recommendedInterval)
+  ) {
+    return "Recommended interval is required";
+  }
+  if (
+    !Number.isInteger(doc.recommendedInterval) ||
     doc.recommendedInterval < MIN_RECOMMENDED_INTERVAL
   ) {
-    return `recommendedInterval must be at least ${MIN_RECOMMENDED_INTERVAL}`;
+    return `Recommended interval must be a whole number, at least ${MIN_RECOMMENDED_INTERVAL}`;
   }
+
+  // serviceRating: required, a whole number 1 to 5.
+  if (doc.serviceRating === null || Number.isNaN(doc.serviceRating)) {
+    return "Service rating is required";
+  }
+  if (
+    !Number.isInteger(doc.serviceRating) ||
+    doc.serviceRating < 1 ||
+    doc.serviceRating > 5
+  ) {
+    return "Service rating must be a whole number between 1 and 5";
+  }
+
+  // notes is optional — no check.
   return null;
 }
 
