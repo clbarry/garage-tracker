@@ -116,6 +116,34 @@ function createDatabase() {
     }
   };
 
+  // Summary: total spend + number of services for EACH month.
+  // Same idea as getSummaryByVehicle, but the group key is the MONTH instead
+  // of the vehicle. Our `date` is a string like "2023-09-11"; we want to group
+  // by "2023-09", so we take the first 7 characters with $substrBytes:
+  //   $substrBytes: ["$date", 0, 7]  ->  ("$date", start at 0, take 7 chars)
+  me.getMonthlySummary = async function () {
+    const { client, services } = await getClient();
+    try {
+      const pipeline = [
+        // $group: bucket by month (first 7 chars of the date string), then for
+        // each month sum the cost and count the services. Same $sum tricks.
+        {
+          $group: {
+            _id: { $substrBytes: ["$date", 0, 7] },
+            totalSpent: { $sum: "$cost" },
+            serviceCount: { $sum: 1 },
+          },
+        },
+        // $sort by the month key, oldest first (1 = ascending). Because the
+        // month is "YYYY-MM" text, alphabetical order IS chronological order.
+        { $sort: { _id: 1 } },
+      ];
+      return await services.aggregate(pipeline).toArray();
+    } finally {
+      await client.close();
+    }
+  };
+
   return me;
 }
 

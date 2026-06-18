@@ -169,7 +169,24 @@ router.get("/summary/by-vehicle", async (req, res) => {
     );
     res.json(summary);
   } catch (error) {
-    console.error("GET /api/services/summary/by-vehicle failed:", error.message);
+    console.error(
+      "GET /api/services/summary/by-vehicle failed:",
+      error.message,
+    );
+    res.status(500).json({ error: "Failed to build summary" });
+  }
+});
+
+// GET /api/services/summary/monthly
+// Returns one row per month: total spend + number of services that month.
+// Same shape as by-vehicle; the db method just groups by month instead.
+router.get("/summary/monthly", async (req, res) => {
+  try {
+    const summary = await db.getMonthlySummary();
+    console.log("GET /api/services/summary/monthly:", summary.length, "months");
+    res.json(summary);
+  } catch (error) {
+    console.error("GET /api/services/summary/monthly failed:", error.message);
     res.status(500).json({ error: "Failed to build summary" });
   }
 });
