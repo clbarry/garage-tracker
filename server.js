@@ -33,7 +33,6 @@ async function start() {
     });
   } catch (error) {
     console.error("Failed to start the server:", error.message);
-    console.error("Is your MongoDB container running, and is .env set?");
   }
 }
 
