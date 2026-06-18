@@ -11,7 +11,7 @@
 //   5. Inserts the linked services and prints a distribution summary.
 
 import { readFileSync } from "fs";
-import db from "../db/database.js";
+import db from "../db/servicesDb.js";
 
 const MAX_SERVICES_PER_VEHICLE = 5;
 

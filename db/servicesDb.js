@@ -1,7 +1,8 @@
-// db/database.js
-// This module is the ONLY place that talks directly to MongoDB.
-// The routes never touch the database; they call the methods below
-// (getServices, createService, ...) and just shape the HTTP response.
+// db/servicesDb.js
+// The ONLY place that talks to MongoDB for the Services feature. The routes
+// never touch the database; they call the methods below (getServices,
+// createService, ...) and just shape the HTTP response. (Vehicles have their
+// own db/vehiclesDb.js — Nipun's feature.)
 //
 // It's built as a "factory": createDatabase() builds an object with the
 // methods, then we export ONE shared instance.
@@ -18,9 +19,10 @@ import { MongoClient } from "mongodb";
 // so it's fine to keep here as a default (both teammates use "garage").
 const DEFAULT_DB_NAME = "garage";
 
-function createDatabase() {
-  // Open a fresh connection and hand back the client (so we can close it)
-  // and the "services" collection (so the method can read/write it).
+function createServicesDb() {
+  // Open a fresh connection and hand back the client (so we can close it),
+  // the "services" collection, and the raw db handle (so a method can reach
+  // another collection when it genuinely needs to — see getDueSoon).
   // The connection string lives in .env (never in the code); server.js
   // loads .env via `node --env-file=.env`.
   async function getClient() {
@@ -28,11 +30,7 @@ function createDatabase() {
     const client = await MongoClient.connect(uri);
     const database = client.db(DEFAULT_DB_NAME);
     const services = database.collection("services");
-    // Most methods only use `services`. due-soon also needs `vehicles`, so we
-    // expose it (and the raw db handle) here. Methods destructure just what
-    // they need, so the extra keys don't affect the existing methods.
-    const vehicles = database.collection("vehicles");
-    return { client, services, vehicles };
+    return { client, database, services };
   }
 
   // The object we build up and return. Methods get attached below.
@@ -162,8 +160,12 @@ function createDatabase() {
   // We return the raw numbers; the frontend decides what counts as "overdue"
   // vs "due soon" and how to display it (that's a presentation choice).
   me.getDueSoon = async function () {
-    const { client, services, vehicles } = await getClient();
+    const { client, database, services } = await getClient();
     try {
+      // due-soon spans BOTH collections, so we reach the vehicles collection
+      // inline here (the only services method that needs it).
+      const vehicles = database.collection("vehicles");
+
       // Two simple reads.
       const allVehicles = await vehicles.find({}).toArray();
       const allServices = await services.find({}).toArray();
@@ -216,4 +218,4 @@ function createDatabase() {
 }
 
 // Export ONE shared instance so the whole app uses the same db object.
-export default createDatabase();
+export default createServicesDb();

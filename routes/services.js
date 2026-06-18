@@ -5,11 +5,11 @@
 //
 // These handlers do HTTP work only: read the request, call a db method, and
 // shape the response (status codes + JSON). All MongoDB work lives in
-// db/database.js — this file never touches a collection directly.
+// db/servicesDb.js — this file never touches a collection directly.
 
 import express from "express";
 import { ObjectId } from "mongodb";
-import db from "../db/database.js";
+import db from "../db/servicesDb.js";
 
 const router = express.Router();
 
