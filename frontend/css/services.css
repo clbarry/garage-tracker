@@ -64,3 +64,23 @@ h2 {
 .sort-arrow {
   margin-left: 4px;
 }
+
+/* Due-Soon "Miles Left" cell coloring by status. JS adds one of these classes
+   to the Miles Left cell: overdue (negative) red, due soon (0-1000) orange,
+   ok (>1000) green. font-weight makes the state pop a bit more.
+   Scoped under #due-soon-tbody td so these beat Bootstrap's .table-striped cell
+   color (which sets --bs-table-color at a higher specificity than a bare
+   single class — without this scoping the colors never show). */
+#due-soon-tbody td.status-overdue {
+  color: #dc3545; /* Bootstrap red */
+  font-weight: bold;
+}
+
+#due-soon-tbody td.status-due-soon {
+  color: #fd7e14; /* Bootstrap orange */
+  font-weight: bold;
+}
+
+#due-soon-tbody td.status-ok {
+  color: #198754; /* Bootstrap green */
+}

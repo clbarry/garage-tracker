@@ -355,14 +355,38 @@ async function MyFrontEnd() {
     console.log("Displayed by-vehicle with", rows.length, "rows");
   }
 
+  // Turn a "YYYY-MM" key into a friendly label like "January 2025". The month
+  // part (after the dash) is "01".."12"; we use it to index the month names
+  // (minus 1, since the array starts at 0). Falls back to the raw key if the
+  // format is unexpected.
+  const MONTH_NAMES = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+  function monthLabel(key) {
+    const [year, month] = key.split("-");
+    const name = MONTH_NAMES[Number(month) - 1];
+    return name ? `${name} ${year}` : key;
+  }
+
   // Render the "Spend by Month" table. Each row is { _id, totalSpent,
-  // serviceCount } where _id is a "YYYY-MM" month string.
+  // serviceCount } where _id is a "YYYY-MM" month string, shown as a name.
   function displayMonthly(rows) {
     const tbody = document.getElementById("monthly-tbody");
     tbody.innerHTML = "";
     for (let r of rows) {
       const row = document.createElement("tr");
-      addCell(row, r._id ?? "—");
+      addCell(row, r._id ? monthLabel(r._id) : "—");
       addCell(row, r.totalSpent != null ? `$${r.totalSpent.toFixed(2)}` : "—");
       addCell(row, r.serviceCount ?? 0);
       tbody.appendChild(row);
@@ -396,13 +420,17 @@ async function MyFrontEnd() {
   // pad to 12). Reads the selected year and filters the kept monthly rows.
   function displayMonthlyForYear() {
     const year = document.getElementById("monthly-year").value;
+    if (!year) {
+      displayMonthly(monthlyRows);
+      return;
+    }
     const forYear = monthlyRows.filter((r) => r._id.startsWith(year));
     displayMonthly(forYear);
   }
 
   // Render the "Due Soon" table. Each row already has a nickname baked in, plus
   // currentMileage, dueAtMileage and milesLeft (negative = overdue). The status
-  // dropdown/coloring comes in a later sub-step; this just shows the numbers.
+  // (overdue / due soon / ok) is decided on the frontend from milesLeft.
   function displayDueSoon(rows) {
     const tbody = document.getElementById("due-soon-tbody");
     tbody.innerHTML = "";
@@ -411,10 +439,65 @@ async function MyFrontEnd() {
       addCell(row, r.nickname ?? "Unknown");
       addCell(row, r.currentMileage ?? "—");
       addCell(row, r.dueAtMileage ?? "—");
-      addCell(row, r.milesLeft ?? "—");
+
+      // Miles Left, colored by status (overdue red / due-soon orange / ok green).
+      const milesCell = document.createElement("td");
+      milesCell.textContent = r.milesLeft ?? "—";
+      if (r.milesLeft != null) {
+        milesCell.classList.add("status-" + dueStatus(r.milesLeft));
+      }
+      row.appendChild(milesCell);
+
       tbody.appendChild(row);
     }
     console.log("Displayed due-soon with", rows.length, "rows");
+  }
+
+  // Decide a vehicle's status from milesLeft (miles until the next service is
+  // due; negative = already overdue). The 1000-mile "soon" threshold lives here
+  // on the frontend, since it's a presentation choice. Returns a string that
+  // matches the dropdown option values: "overdue" / "due-soon" / "ok".
+  function dueStatus(milesLeft) {
+    if (milesLeft < 0) {
+      return "overdue";
+    }
+    if (milesLeft <= 1000) {
+      return "due-soon";
+    }
+    return "ok";
+  }
+
+  // Show the Due-Soon rows matching the status dropdown, then (if a Miles Left
+  // sort is active) sorted by milesLeft. "all" shows everything; otherwise we
+  // keep only rows whose computed status matches. Filters/sorts the kept rows
+  // (no refetch). We copy the list with slice() before sorting so we don't
+  // reorder the kept dueSoonRows itself.
+  function displayDueSoonForStatus() {
+    const choice = document.getElementById("due-status").value;
+    let rows =
+      choice === "all"
+        ? dueSoonRows.slice()
+        : dueSoonRows.filter((r) => dueStatus(r.milesLeft) === choice);
+
+    if (dueSortDir === "asc" || dueSortDir === "desc") {
+      rows.sort((a, b) => {
+        // milesLeft is always a number here, so a plain subtraction works.
+        return dueSortDir === "asc"
+          ? a.milesLeft - b.milesLeft
+          : b.milesLeft - a.milesLeft;
+      });
+    }
+
+    displayDueSoon(rows);
+  }
+
+  // Toggle the Miles Left sort (ascending first = most overdue on top, then
+  // descending) and re-render. Updates the arrow on the button.
+  function sortDueSoon() {
+    dueSortDir = dueSortDir === "asc" ? "desc" : "asc";
+    document.getElementById("miles-sort-arrow").textContent =
+      dueSortDir === "asc" ? "▲" : "▼";
+    displayDueSoonForStatus();
   }
 
   // Fetch all three summaries at once (they don't depend on each other, so we
@@ -437,7 +520,10 @@ async function MyFrontEnd() {
     fillYearDropdown(monthlyRows);
     displayMonthlyForYear();
 
-    displayDueSoon(dueSoon);
+    // Keep the due-soon rows and show them filtered by the status dropdown
+    // (defaults to "All").
+    dueSoonRows = dueSoon;
+    displayDueSoonForStatus();
   }
 
   // Sort the kept Spend-by-Vehicle rows and re-render. No refetch — we re-order
@@ -678,6 +764,16 @@ async function MyFrontEnd() {
       .getElementById("monthly-year")
       .addEventListener("change", displayMonthlyForYear);
 
+    // Due-Soon status dropdown: filter the rows by status on change.
+    document
+      .getElementById("due-status")
+      .addEventListener("change", displayDueSoonForStatus);
+
+    // Due-Soon Miles Left sort button: toggle ascending/descending.
+    document
+      .getElementById("sort-miles-left")
+      .addEventListener("click", sortDueSoon);
+
     // Service-list sortable headers: one handler reads each header's data-sort
     // key and sorts the kept rows by that column.
     const sortableHeaders = document.querySelectorAll("th.sortable");
@@ -718,6 +814,14 @@ async function MyFrontEnd() {
   // The Spend-by-Month rows, kept so the year dropdown can show just one year's
   // months without another request.
   let monthlyRows = [];
+
+  // The Due-Soon rows, kept so the status dropdown can filter them without
+  // another request.
+  let dueSoonRows = [];
+
+  // Miles Left sort direction for Due-Soon: null = unsorted (the order from the
+  // API, most-urgent-first), then "asc" or "desc" once the button is clicked.
+  let dueSortDir = null;
 
   fillVehicleDatalist(vehicles);
   await refreshServices();
