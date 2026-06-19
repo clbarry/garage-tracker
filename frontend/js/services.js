@@ -35,6 +35,20 @@ async function MyFrontEnd() {
     return vehicles;
   }
 
+  // GET a single service by its id. Used when opening a record to edit, so the
+  // form is filled from the freshest copy in the DB (not a possibly-stale row
+  // from the last list load). Returns the service, or null on failure.
+  async function fetchServiceById(id) {
+    const res = await fetch("/api/services/" + id);
+    if (!res.ok) {
+      console.error("Error fetching service " + id + ":", res.statusText);
+      return null;
+    }
+    const service = await res.json();
+    console.log("Fetched service", id);
+    return service;
+  }
+
   // GET one of the three summary reports. `path` is the part after
   // /api/services/summary/ (e.g. "by-vehicle"). They all return a JSON array,
   // so one helper covers all three. Returns [] (and logs) on failure, so a
@@ -200,11 +214,13 @@ async function MyFrontEnd() {
     document.getElementById("service-form-section").classList.remove("editing");
   }
 
-  // Fill the form from an already-loaded service and switch to Edit mode. We use
-  // the service object the row already has (passed in from displayServices), so
-  // there's no need to re-fetch it. The vehicle field shows the nickname (the
-  // form works in nicknames); readServiceForm maps it back to the _id on save.
-  function fillFormForEdit(s) {
+  // Open a service for editing. We re-fetch the record fresh by id (so the form
+  // reflects what's actually in the DB right now), and fall back to the row we
+  // already have if that fetch fails so Edit still works offline/erroring.
+  // `row` is the service object from the list. The vehicle field shows the
+  // nickname (the form works in nicknames); readServiceForm maps it back on save.
+  async function fillFormForEdit(row) {
+    const s = (await fetchServiceById(row._id)) ?? row;
     editingId = s._id;
 
     document.getElementById("form-vehicle").value =
