@@ -208,10 +208,10 @@ All endpoints return JSON.
 
 ## Academic Reference
 
-**Course:** CS5610 Web Development
-**Institution:** Northeastern University
-**Term:** Summer 2026
-**Instructor:** TBD
+This project was created as part of the **Web Development Course (Summer 2026)** at Northeastern University.
+
+- **Course**: [CS5610 Web Development — Northeastern University](https://johnguerra.co/classes/webDevelopment_online_summer_2026/)
+- **Instructor**: John Alexis Guerra Gómez
 
 ---
 
@@ -223,7 +223,7 @@ This repository is a course project submission for CS5610 Web Development at Nor
 
 ## Use of GenAI Tools
 
-This section discloses where generative AI was used in this project.
+This section discloses where generative AI was used in this project. We used Claude Opus 4.8 model.
 
 1. **Seed data generation.** Sample data for both collections was generated with [Mockaroo](https://www.mockaroo.com/). Claude was used to help write the `data/loadServices.js` and `data/loadVehicles.js` scripts that load the JSON files into MongoDB.
 
