@@ -1,11 +1,119 @@
-# garage-tracker
-Garage-tracker is a full-stack web application for tracking vehicle maintenance.
+# Garage Tracker
 
-## API (Services)
+A full-stack web application for tracking vehicle maintenance, built with Node.js, Express, MongoDB (native driver), and vanilla JavaScript (ES6) with a Bootstrap-styled, client-side-rendered frontend.
 
-All endpoints are mounted under `/api/services` and return JSON.
+## Project Objective
 
-**Records**
+Garage Tracker is built for CS5610 Web Development at Northeastern University. It's for anyone who owns one or more vehicles and wants their maintenance history in one place instead of a glovebox full of receipts. Users add the vehicles they own and log each service performed on them; the app then shows useful summaries — total maintenance spend per vehicle, cost-per-mile, monthly spending, and which services are coming due based on mileage. It uses two linked MongoDB collections (Vehicles and Services), each with full CRUD, exposed through a REST API and rendered entirely in the browser.
+
+## Pages
+
+- **Vehicles ("Your Garage")**: Add, browse, search, and filter vehicles by status, make, and year; open a detail view with all of a car's info, a quick mileage-update control, and edit/delete.
+- **Services (Maintenance History & Costs)**: Log services with a shop rating, filter history by vehicle/type/date range, edit/delete records, and view computed reports — total spend per vehicle, cost-per-mile, monthly spend, and a due-soon maintenance list.
+
+## Tech Stack
+
+- **Node.js + Express** — REST API and static file server (ES modules)
+- **MongoDB (native Node.js driver)** — two collections, no Mongoose
+- **Vanilla JavaScript (ES6)** — client-side rendering with the Fetch API
+- **HTML5 + CSS3 + Bootstrap 5** — semantic markup, per-page stylesheets
+- **ESLint + Prettier** — code quality and formatting
+
+## How to Run
+
+This app runs locally against a MongoDB instance. We use MongoDB in Docker.
+
+1. **Clone and install**
+   ```bash
+   git clone https://github.com/nipunjay10/garage-tracker.git
+   cd garage-tracker
+   npm install
+   ```
+2. **Start MongoDB** (Docker, exposing the default port):
+   ```bash
+   docker run -d --name garage-mongo -p 27017:27017 mongo
+   ```
+3. **Set the connection string.** Create a `.env` file in the project root:
+   ```
+   MONGODB_URI=mongodb://localhost:27017
+   ```
+4. **Seed the database** with sample vehicles and services:
+   ```bash
+   node --env-file=.env data/loadServices.js
+   ```
+5. **Start the server:**
+   ```bash
+   npm start
+   ```
+6. Open **http://localhost:3000/vehicles.html** (or `http://localhost:3000/services.html`) in your browser.
+
+## Screenshots
+
+### Vehicles ("Your Garage")
+
+![Vehicles page]
+
+*INSERT IMAGE*
+
+### Services (Maintenance History & Costs)
+
+![Services page]
+
+*INSERT IMAGE*
+
+## Project Structure
+
+```
+garage-tracker/
+├── server.js                 # Express entry point; serves frontend + mounts routes
+├── db/
+│   ├── vehiclesDb.js         # All MongoDB access for the Vehicles collection
+│   └── servicesDb.js         # All MongoDB access for the Services collection
+├── routes/
+│   ├── vehicles.js           # /api/vehicles routes (CRUD + filtering + mileage)
+│   └── services.js           # /api/services routes (CRUD + filters + summaries)
+├── frontend/
+│   ├── vehicles.html         # Vehicles page
+│   ├── services.html         # Services page
+│   ├── css/
+│   │   ├── vehicles.css
+│   │   └── services.css
+│   └── js/
+│       ├── vehicles.js
+│       └── services.js
+├── data/
+│   ├── vehicles-mockaroo.json
+│   ├── services-mockaroo.json
+│   └── loadServices.js       # Seed script (inserts vehicles, then linked services)
+├── README.md
+├── LICENSE                   # MIT
+├── package.json
+└── eslint.config.js
+```
+
+## API
+
+All endpoints return JSON.
+
+### Vehicles — `/api/vehicles`
+
+| Method | Path | Description |
+| --- | --- | --- |
+| `GET` | `/api/vehicles` | List all vehicles. |
+| `POST` | `/api/vehicles` | Create a vehicle. |
+| `GET` | `/api/vehicles/:id` | Get one vehicle by id. |
+| `PUT` | `/api/vehicles/:id` | Update a vehicle by id. |
+| `PATCH` | `/api/vehicles/:id/mileage` | Update only the current mileage. |
+| `DELETE` | `/api/vehicles/:id` | Delete a vehicle by id. |
+
+**Filters** (query params on `GET /api/vehicles`, combinable)
+
+- `?status=<status>` — Active / In Repair / Garaged / Sold
+- `?make=<make>` — only that make
+- `?year=<year>` — only that year
+- `?q=<text>` — search nickname, make, and model (case-insensitive)
+
+### Services — `/api/services`
 
 | Method | Path | Description |
 | --- | --- | --- |
@@ -29,42 +137,24 @@ All endpoints are mounted under `/api/services` and return JSON.
 | `GET` | `/api/services/summary/monthly` | Total spend and service count per month. |
 | `GET` | `/api/services/summary/due-soon` | Each vehicle's predicted next service by mileage (`milesLeft`, negative = overdue), most urgent first. |
 
-## Use of AI (Data Generation)
+## Authors
 
-The seed data for the two collections was created in two steps:
+**Nipun Jayakumar** — Garage Management feature (Vehicles)
+[GitHub](https://github.com/nipunjay10)
 
-**1. Mockaroo.** I used [Mockaroo](https://www.mockaroo.com/) to generate the raw records as JSON:
+**Khush Patel** — Maintenance History & Costs feature (Services)
+[GitHub](https://github.com/kmpat339)
 
-- **Vehicles** (`data/vehicles-mockaroo.json`, 300 rows): `make` (Car Make), `model` (Car Model),
-  `year`, `currentMileage`, `purchasePrice`, and `status` (a custom list of
-  Active / In Repair / Garaged / Sold). No `id` field was added, so MongoDB generates each `_id`.
-- **Services** (`data/services-mockaroo.json`, 700 rows): `date` (formatted `YYYY-MM-DD`),
-  `serviceType` (custom list), `mileageAtService`, `cost` (2 decimals), `recommendedInterval`,
-  `shopName`, `serviceRating` (1–5), and `notes`. The services were generated **without** a
-  `vehicleId`, since the link is added in the next step.
+## Use of GenAI Tools
 
-**2. Claude.** I then used Claude (Anthropic) to write a Node script (`data/loadServices.js`) that
-prepares a test database from those two files. I directed it to:
+This section discloses where generative AI was used in this project.
 
-- Insert the 300 vehicles, then read back their MongoDB `_id`s.
-- Give each vehicle a **random 0–5 services**, so some vehicles have no service history.
-- Link each service to a vehicle by storing that vehicle's `_id` as the service's `vehicleId`
-  (the foreign key). `vehicleId` is stored as a native MongoDB `ObjectId` (the same type as
-  `vehicles._id`), so the two collections join directly without any type conversion.
-- Clamp each service's `mileageAtService` so it never exceeds the vehicle's `currentMileage`.
-- Stop once 700 services are assigned, giving exactly 1000 total documents across both collections.
-- Add a unique nickname to each vehicle.
+1. **Seed data generation (Services + Vehicles).** The sample data for both collections was generated with [Mockaroo](https://www.mockaroo.com/), and Claude was used as an aid to write the `data/loadServices.js` script that loads the two files into MongoDB — inserting the vehicles first so each gets an `_id`, then giving each vehicle a random 0–5 services and linking them by storing the vehicle's `_id` as the service's `vehicleId`.
 
-### Representative prompt
+2. **Vehicles feature — scaffolding and debugging.** For the Garage Management feature, Claude was used as a coding aid: scaffolding the structure of the Vehicles files to match the existing Services pattern (`db/vehiclesDb.js`, `routes/vehicles.js`, and the `frontend/vehicles.*` files), and helping debug along the way. All decisions, the field/validation rules, the API design, and the final code were reviewed, understood, and modified by us.
 
-```
-I have two mockaroo json files, one for vehicles and one for services. write me a node script
-that loads them into mongo. insert the vehicles first so they each get an _id, then give each
-vehicle a random 0 to 5 services and link them by putting the vehicle's _id as the service's
-vehicleId. also make sure a service's mileageAtService isn't higher than the vehicle's
-currentMileage. keep going till 700 services are added so both collections add up to 1000 total,
-and print how many services each car got.
-```
+3. **Build guidance.** Throughout the project, Claude was used to talk through Express/MongoDB concepts and review approach. All implementation choices were made and verified by the team.
 
-This script is a development convenience for populating a test database; in normal use the database
-is filled through the application's frontend.
+## License
+
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.

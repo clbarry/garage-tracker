@@ -1,0 +1,52 @@
+/* css/vehicles.css
+   Page-specific styles for vehicles.html, loaded AFTER Bootstrap so these win
+   where they overlap. Bootstrap handles the grid, forms, tables, and buttons;
+   this file only adds what it doesn't: a scroll cap on the list and the
+   coloured status badges. */
+
+/* Cap the list height so the table scrolls inside its box instead of making
+   the whole page grow. The sticky header keeps the column titles visible
+   while the rows scroll under them. */
+.scroll-table {
+  max-height: 30rem;
+  overflow: auto;
+}
+
+.scroll-table thead th {
+  position: sticky;
+  top: 0;
+  background-color: #fff;
+}
+
+/* Small coloured pill for a vehicle's status. Built as a base class plus one
+   modifier per status (status-active, status-in-repair, ...), so the colour
+   lives in CSS and the JS just adds the right class. */
+.status-badge {
+  display: inline-block;
+  padding: 0.2em 0.6em;
+  border-radius: 0.5rem;
+  font-size: 0.85em;
+  font-weight: 500;
+  color: #fff;
+}
+
+.status-active {
+  background-color: #198754; /* green: on the road */
+}
+
+.status-in-repair {
+  background-color: #fd7e14; /* orange: in the shop */
+}
+
+.status-garaged {
+  background-color: #6c757d; /* grey: parked */
+}
+
+.status-sold {
+  background-color: #212529; /* near-black: no longer owned */
+}
+
+/* Keep the per-row View/Edit/Delete buttons on one line. */
+.row-actions {
+  white-space: nowrap;
+}

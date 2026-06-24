@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Garage Tracker</title>
+
+    <!-- Bootstrap (CDN). We are ONLY using its grid (container/row/col-*) for
+         now. No other Bootstrap styling is applied; the rest of the page is
+         plain semantic HTML so we can style it ourselves later. -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+      crossorigin="anonymous"
+    />
+
+    <!-- Our own stylesheet, loaded after Bootstrap. -->
+    <link rel="stylesheet" href="css/vehicles.css" />
+
+    <!-- Our page logic. Deferred so it runs after the HTML is parsed. -->
+    <script src="js/vehicles.js" defer></script>
+  </head>
+
+  <body>
+    <header>
+      <!-- Bootstrap navbar: site name (brand) on the left, page links on the
+           right. No collapse/hamburger, so it needs no JavaScript. -->
+      <nav class="navbar navbar-expand navbar-dark bg-dark">
+        <div class="container">
+          <a class="navbar-brand" href="services.html">Garage Tracker</a>
+
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="services.html">Services</a>
+            </li>
+            <li class="nav-item">
+              <!-- aria-current marks this as the page we're on. -->
+              <a
+                class="nav-link active"
+                aria-current="page"
+                href="vehicles.html"
+                >Vehicles</a
+              >
+            </li>
+          </ul>
+        </div>
+      </nav>
+    </header>
+
+    <main class="container mt-4 mb-4">
+      <!-- Two columns: main content (left) + add/edit form sidebar (right). -->
+      <div class="row">
+        <!-- ===================== LEFT COLUMN ===================== -->
+        <div class="col-md-8">
+          <!-- Vehicle list, with its filters above the table. -->
+          <section class="border rounded p-3 mb-4">
+            <h2>Your Garage</h2>
+
+            <p>Search and filter the vehicles in your garage.</p>
+            <!-- Filters act on the list below (wired up in JS). row g-2 = small
+                 gaps; columns wrap to the next line past the 12-unit grid. -->
+            <form id="filter-form" class="row g-2 mb-3 align-items-end">
+              <div class="col-md-4">
+                <label for="filter-q" class="form-label">Search</label>
+                <input
+                  id="filter-q"
+                  class="form-control"
+                  placeholder="Nickname, make, or model"
+                />
+              </div>
+
+              <div class="col-md-3">
+                <label for="filter-status" class="form-label">Status</label>
+                <select id="filter-status" class="form-select">
+                  <option value="">All statuses</option>
+                  <option value="Active">Active</option>
+                  <option value="In Repair">In Repair</option>
+                  <option value="Garaged">Garaged</option>
+                  <option value="Sold">Sold</option>
+                </select>
+              </div>
+
+              <div class="col-md-3">
+                <label for="filter-make" class="form-label">Make</label>
+                <!-- Type-to-search: #make-options suggestions are filled by JS
+                     from the data (distinct makes). -->
+                <input
+                  id="filter-make"
+                  class="form-control"
+                  list="make-options"
+                  placeholder="All makes"
+                />
+                <datalist id="make-options"></datalist>
+              </div>
+
+              <div class="col-md-2">
+                <label for="filter-year" class="form-label">Year</label>
+                <input
+                  id="filter-year"
+                  type="number"
+                  class="form-control"
+                  placeholder="Any"
+                />
+              </div>
+
+              <div class="col-12">
+                <button type="submit" class="btn btn-primary">Apply</button>
+                <button
+                  type="button"
+                  id="filter-reset"
+                  class="btn btn-secondary"
+                >
+                  Reset
+                </button>
+              </div>
+            </form>
+
+            <!-- Count + hint line, updated by JS. -->
+            <p id="vehicle-count" class="text-muted small mb-1"></p>
+
+            <!-- Rows go in <tbody> via JS. table-responsive scrolls sideways on
+                 narrow screens; scroll-table caps the height so rows scroll
+                 (header stays pinned). -->
+            <div class="table-responsive scroll-table">
+              <table class="table table-striped align-middle">
+                <thead>
+                  <tr>
+                    <th>Vehicle</th>
+                    <th>Year</th>
+                    <th>Mileage</th>
+                    <th>Price</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="vehicles-tbody">
+                  <!-- vehicle rows rendered here by JS -->
+                  <tr>
+                    <td>Loading…</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <!-- Detail view: filled when a vehicle's "View" is clicked. -->
+          <section class="border rounded p-3 mb-4">
+            <h2>Vehicle Details</h2>
+            <p id="detail-empty" class="text-muted">
+              Select a vehicle above to see its details.
+            </p>
+
+            <!-- Hidden until a vehicle is selected (JS toggles d-none). -->
+            <div id="detail-body" class="d-none">
+              <dl class="row mb-3">
+                <dt class="col-sm-3">Nickname</dt>
+                <dd class="col-sm-9" id="detail-nickname"></dd>
+                <dt class="col-sm-3">Make &amp; model</dt>
+                <dd class="col-sm-9" id="detail-makemodel"></dd>
+                <dt class="col-sm-3">Year</dt>
+                <dd class="col-sm-9" id="detail-year"></dd>
+                <dt class="col-sm-3">Mileage</dt>
+                <dd class="col-sm-9" id="detail-mileage"></dd>
+                <dt class="col-sm-3">Purchase price</dt>
+                <dd class="col-sm-9" id="detail-price"></dd>
+                <dt class="col-sm-3">Status</dt>
+                <dd class="col-sm-9" id="detail-status"></dd>
+              </dl>
+
+              <!-- Quick mileage update (PATCH). Its own little form so it
+                   doesn't submit the big add/edit form on the right. -->
+              <form id="mileage-form" class="row g-2 align-items-end mb-3">
+                <div class="col-auto">
+                  <label for="mileage-input" class="form-label"
+                    >Update mileage</label
+                  >
+                  <input
+                    id="mileage-input"
+                    type="number"
+                    class="form-control"
+                  />
+                </div>
+                <div class="col-auto">
+                  <button type="submit" class="btn btn-outline-primary">
+                    Save mileage
+                  </button>
+                </div>
+              </form>
+
+              <button type="button" id="detail-edit" class="btn btn-primary">
+                Edit this vehicle
+              </button>
+              <button type="button" id="detail-delete" class="btn btn-danger">
+                Delete
+              </button>
+
+              <p id="detail-message" class="mt-2"></p>
+            </div>
+          </section>
+        </div>
+
+        <!-- ===================== RIGHT COLUMN (sidebar) ===================== -->
+        <div class="col-md-4">
+          <!-- Add/Edit form. One form does both: empty = add (POST); clicking
+               Edit fills it and switches to update (PUT). Wired in JS. -->
+          <section class="border rounded p-3">
+            <!-- Heading swapped by JS: "Add a Vehicle" <-> "Edit Vehicle". -->
+            <h2 id="form-heading">Add a Vehicle</h2>
+            <form id="vehicle-form">
+              <div class="mb-3">
+                <label for="form-nickname" class="form-label"
+                  >Nickname (optional)</label
+                >
+                <input id="form-nickname" type="text" class="form-control" />
+              </div>
+
+              <div class="mb-3">
+                <label for="form-make" class="form-label">Make</label>
+                <input id="form-make" type="text" class="form-control" />
+              </div>
+
+              <div class="mb-3">
+                <label for="form-model" class="form-label">Model</label>
+                <input id="form-model" type="text" class="form-control" />
+              </div>
+
+              <div class="mb-3">
+                <label for="form-year" class="form-label">Year</label>
+                <input id="form-year" type="number" class="form-control" />
+              </div>
+
+              <div class="mb-3">
+                <label for="form-mileage" class="form-label"
+                  >Current Mileage</label
+                >
+                <input id="form-mileage" type="number" class="form-control" />
+              </div>
+
+              <div class="mb-3">
+                <label for="form-price" class="form-label"
+                  >Purchase Price</label
+                >
+                <input
+                  id="form-price"
+                  type="number"
+                  step="0.01"
+                  class="form-control"
+                />
+              </div>
+
+              <div class="mb-3">
+                <label for="form-status" class="form-label">Status</label>
+                <select id="form-status" class="form-select">
+                  <option value="">Select a status…</option>
+                  <option value="Active">Active</option>
+                  <option value="In Repair">In Repair</option>
+                  <option value="Garaged">Garaged</option>
+                  <option value="Sold">Sold</option>
+                </select>
+              </div>
+
+              <!-- Submit text swapped by JS: "Save" (add) <-> "Update" (edit). -->
+              <button type="submit" id="form-submit" class="btn btn-primary">
+                Save
+              </button>
+              <!-- Only shown in edit mode (JS removes d-none); clears the form
+                   and returns to add mode. type="button" so it doesn't submit. -->
+              <button
+                type="button"
+                id="form-cancel"
+                class="btn btn-secondary d-none"
+              >
+                Cancel
+              </button>
+
+              <!-- One shared error line: the front-end gate's message or the
+                   error the backend sends on a 400. Cleared on a good save. -->
+              <p id="form-error" class="text-danger mt-2"></p>
+            </form>
+          </section>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>
