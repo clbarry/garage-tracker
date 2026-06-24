@@ -231,7 +231,10 @@ router.patch("/:id/mileage", requireValidId, async (req, res) => {
     }
 
     const result = await db.updateVehicleMileage(req.objectId, mileage);
-    console.log("PATCH /api/vehicles/:id/mileage matched:", result.matchedCount);
+    console.log(
+      "PATCH /api/vehicles/:id/mileage matched:",
+      result.matchedCount,
+    );
 
     if (result.matchedCount === 0) {
       return res.status(404).json({ error: "Vehicle not found" });
@@ -257,8 +260,14 @@ router.delete("/:id", requireValidId, async (req, res) => {
 
     // also drop this vehicle's services so they don't linger as orphans in the
     // summaries (spend-by-vehicle, due-soon, etc.)
-    const servicesResult = await servicesDb.deleteServicesByVehicle(req.objectId);
-    console.log("DELETE /api/vehicles/:id cascade-deleted", servicesResult.deletedCount, "services");
+    const servicesResult = await servicesDb.deleteServicesByVehicle(
+      req.objectId,
+    );
+    console.log(
+      "DELETE /api/vehicles/:id cascade-deleted",
+      servicesResult.deletedCount,
+      "services",
+    );
 
     res.json({ message: "Vehicle deleted" });
   } catch (error) {

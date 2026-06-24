@@ -4,7 +4,7 @@ A full-stack web application for tracking vehicle maintenance, built with Node.j
 
 **Live Website:** [https://garage-tracker.onrender.com/](https://garage-tracker.onrender.com/)
 
-**Demo Video:** TBD
+**Demo Video:** [https://youtu.be/IdhdJPowPLU](https://youtu.be/IdhdJPowPLU)
 
 ---
 
@@ -25,12 +25,14 @@ Garage Tracker is built for CS5610 Web Development at Northeastern University. I
 ## Key Features
 
 **Vehicles**
+
 - Full CRUD — add, view, edit, and delete vehicles
 - Filter by status, make, year, or free-text search (nickname/make/model)
 - Detail panel with quick odometer update (PATCH endpoint — no full edit required)
 - Cascade delete — removing a vehicle also removes all its service records
 
 **Services**
+
 - Full CRUD — log, edit, and delete maintenance records linked to a vehicle
 - Filters: vehicle, service type, cost range, date range (combinable)
 - Sortable table columns (vehicle, date, type, mileage, cost, shop, rating)
@@ -38,6 +40,7 @@ Garage Tracker is built for CS5610 Web Development at Northeastern University. I
 - Both Red error and Green success highlight on form fields after a successful save or error
 
 **Summary Reports**
+
 - Spend by Vehicle — total cost and service count per vehicle, sortable
 - Spend by Month — monthly totals with a year dropdown
 - Due Soon — predicted next service by mileage; color-coded overdue / due-soon / ok; filterable by status and sortable by miles left
@@ -59,6 +62,7 @@ Garage Tracker is built for CS5610 Web Development at Northeastern University. I
 This app runs locally against a MongoDB instance. We use MongoDB in Docker.
 
 1. **Clone and install**
+
    ```bash
    git clone https://github.com/kmpat339/garage-tracker.git
    cd garage-tracker
@@ -66,27 +70,32 @@ This app runs locally against a MongoDB instance. We use MongoDB in Docker.
    ```
 
 2. **Start MongoDB** (Docker, exposing the default port):
+
    ```bash
    docker run -d --name garage-mongo -p 27017:27017 mongo
    ```
 
 3. **Set the connection string.** Create a `.env` file in the project root:
+
    ```
    MONGODB_URI=mongodb://localhost:27017
    ```
 
 4. **Import sample data** into MongoDB:
+
    ```bash
    mongoimport --db garage --collection vehicles --file data/vehicles-backup.json --jsonArray
    mongoimport --db garage --collection services --file data/services-backup.json --jsonArray
    ```
 
 5. **Start the server:**
+
    ```bash
    npm run dev      # watches for file changes (recommended during development)
    # or
    npm start        # one-shot start (requires .env file in project root)
    ```
+
    > **Render / production:** set the start command to `npm run deploy` — this runs without `--env-file` so Render's injected environment variables are used directly.
 
 6. Open **[http://localhost:3000](http://localhost:3000)** in your browser.
@@ -147,14 +156,14 @@ All endpoints return JSON.
 
 ### Vehicles — `/api/vehicles`
 
-| Method | Path | Description |
-| --- | --- | --- |
-| `GET` | `/api/vehicles` | List all vehicles (optional filters). |
-| `POST` | `/api/vehicles` | Create a vehicle. |
-| `GET` | `/api/vehicles/:id` | Get one vehicle by id. |
-| `PUT` | `/api/vehicles/:id` | Update a vehicle by id. |
-| `PATCH` | `/api/vehicles/:id/mileage` | Update only the current mileage. |
-| `DELETE` | `/api/vehicles/:id` | Delete a vehicle (and all its services) by id. |
+| Method   | Path                        | Description                                    |
+| -------- | --------------------------- | ---------------------------------------------- |
+| `GET`    | `/api/vehicles`             | List all vehicles (optional filters).          |
+| `POST`   | `/api/vehicles`             | Create a vehicle.                              |
+| `GET`    | `/api/vehicles/:id`         | Get one vehicle by id.                         |
+| `PUT`    | `/api/vehicles/:id`         | Update a vehicle by id.                        |
+| `PATCH`  | `/api/vehicles/:id/mileage` | Update only the current mileage.               |
+| `DELETE` | `/api/vehicles/:id`         | Delete a vehicle (and all its services) by id. |
 
 **Filters** (query params on `GET /api/vehicles`, combinable)
 
@@ -165,13 +174,13 @@ All endpoints return JSON.
 
 ### Services — `/api/services`
 
-| Method | Path | Description |
-| --- | --- | --- |
-| `GET` | `/api/services` | List all service records (optional filters). |
-| `POST` | `/api/services` | Create a service record. |
-| `GET` | `/api/services/:id` | Get one record by id. |
-| `PUT` | `/api/services/:id` | Replace a record by id. |
-| `DELETE` | `/api/services/:id` | Delete a record by id. |
+| Method   | Path                | Description                                  |
+| -------- | ------------------- | -------------------------------------------- |
+| `GET`    | `/api/services`     | List all service records (optional filters). |
+| `POST`   | `/api/services`     | Create a service record.                     |
+| `GET`    | `/api/services/:id` | Get one record by id.                        |
+| `PUT`    | `/api/services/:id` | Replace a record by id.                      |
+| `DELETE` | `/api/services/:id` | Delete a record by id.                       |
 
 **Filters** (query params on `GET /api/services`, combinable)
 
@@ -182,11 +191,11 @@ All endpoints return JSON.
 
 **Summary Reports**
 
-| Method | Path | Description |
-| --- | --- | --- |
-| `GET` | `/api/services/summary/by-vehicle` | Total spend and service count per vehicle. |
-| `GET` | `/api/services/summary/monthly` | Total spend and service count per month. |
-| `GET` | `/api/services/summary/due-soon` | Each vehicle's predicted next service by mileage (`milesLeft`, negative = overdue), most urgent first. |
+| Method | Path                               | Description                                                                                            |
+| ------ | ---------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `GET`  | `/api/services/summary/by-vehicle` | Total spend and service count per vehicle.                                                             |
+| `GET`  | `/api/services/summary/monthly`    | Total spend and service count per month.                                                               |
+| `GET`  | `/api/services/summary/due-soon`   | Each vehicle's predicted next service by mileage (`milesLeft`, negative = overdue), most urgent first. |
 
 ---
 
@@ -217,15 +226,16 @@ This project was created as part of the **Web Development Course (Summer 2026)**
 - **Thumbnail image:** ![Demo thumbnail](./images/thumbnail.jpeg)
 
 ---
+
 ## Use of GenAI Tools
 
 This section discloses where generative AI was used in this project. We used Claude Opus 4.8 model.
 
 1. **Seed data generation.** Sample data for both collections was generated with [Mockaroo](https://www.mockaroo.com/). Claude was used to preprocess the mockaroo files so the vehicleId field in services had a matching ObjectId that existed in the Vehicles collection. Also, preprocessed it so each vehicle had 0-5 vehicles in some random distribution.
 
-3. **Scaffolding and debugging.** Claude was used as a coding aid to scaffold and match the Vehicles and Services files and to help debug along the way. All decisions, validation rules, API design, and final code were reviewed and understood by the team.
+2. **Scaffolding and debugging.** Claude was used as a coding aid to scaffold and match the Vehicles and Services files and to help debug along the way. All decisions, validation rules, API design, and final code were reviewed and understood by the team.
 
-4. **Build guidance.** Claude was used throughout the project to talk through Express/MongoDB concepts and review approach. All implementation choices were made and verified by the team.
+3. **Build guidance.** Claude was used throughout the project to talk through Express/MongoDB concepts and review approach. All implementation choices were made and verified by the team.
 
 ---
 

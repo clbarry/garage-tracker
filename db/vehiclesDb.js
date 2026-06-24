@@ -1,7 +1,7 @@
 // db/vehiclesDb.js - DATA LAYER
 // The only place that talks to MongoDB for vehicles. Same factory + per-call
-// connection style as servicesDb.js, but self-contained -> its own getClient 
-// Full CRUD: list (with optional filter), get one, create, update, a quick mileage-only update, and delete 
+// connection style as servicesDb.js, but self-contained -> its own getClient
+// Full CRUD: list (with optional filter), get one, create, update, a quick mileage-only update, and delete
 // The routes call these and never touch a collection directly.
 
 import { MongoClient } from "mongodb";
