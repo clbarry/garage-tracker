@@ -5,9 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Garage Tracker</title>
 
-    <!-- Bootstrap (CDN). We are ONLY using its grid (container/row/col-*) for
-         now. No other Bootstrap styling is applied; the rest of the page is
-         plain semantic HTML so we can style it ourselves later. -->
+    <!-- bootstrap via cdn -->
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -15,17 +13,16 @@
       crossorigin="anonymous"
     />
 
-    <!-- Our own stylesheet, loaded after Bootstrap. -->
+    <!-- our styles, after bootstrap so they win -->
     <link rel="stylesheet" href="css/vehicles.css" />
 
-    <!-- Our page logic. Deferred so it runs after the HTML is parsed. -->
+    <!-- page logic, deferred so the html is parsed first -->
     <script src="js/vehicles.js" defer></script>
   </head>
 
   <body>
     <header>
-      <!-- Bootstrap navbar: site name (brand) on the left, page links on the
-           right. No collapse/hamburger, so it needs no JavaScript. -->
+      <!-- navbar: brand left, page links right -->
       <nav class="navbar navbar-expand navbar-dark bg-dark">
         <div class="container">
           <a class="navbar-brand" href="index.html">Garage Tracker</a>
@@ -35,7 +32,7 @@
               <a class="nav-link" href="services.html">Services</a>
             </li>
             <li class="nav-item">
-              <!-- aria-current marks this as the page we're on. -->
+              <!-- current page -->
               <a
                 class="nav-link active"
                 aria-current="page"
@@ -49,17 +46,19 @@
     </header>
 
     <main class="container mt-4 mb-4">
-      <!-- Two columns: main content (left) + add/edit form sidebar (right). -->
+      <!-- left = list + detail, right = add/edit form -->
       <div class="row">
+
+
+        
         <!-- ===================== LEFT COLUMN ===================== -->
         <div class="col-md-8">
-          <!-- Vehicle list, with its filters above the table. -->
+          <!-- vehicle list with filters on top -->
           <section class="border rounded p-3 mb-4">
             <h2>Your Garage</h2>
 
             <p>Search and filter the vehicles in your garage.</p>
-            <!-- Filters act on the list below (wired up in JS). row g-2 = small
-                 gaps; columns wrap to the next line past the 12-unit grid. -->
+            <!-- filters act on the list below (wired in js) -->
             <form id="filter-form" class="row g-2 mb-3 align-items-end">
               <div class="col-md-4">
                 <label for="filter-q" class="form-label">Search</label>
@@ -83,8 +82,7 @@
 
               <div class="col-md-3">
                 <label for="filter-make" class="form-label">Make</label>
-                <!-- Type-to-search: #make-options suggestions are filled by JS
-                     from the data (distinct makes). -->
+                <!-- make suggestions are filled by js from the data -->
                 <input
                   id="filter-make"
                   class="form-control"
@@ -116,12 +114,10 @@
               </div>
             </form>
 
-            <!-- Count + hint line, updated by JS. -->
+            <!-- count line, updated by js -->
             <p id="vehicle-count" class="text-muted small mb-1"></p>
 
-            <!-- Rows go in <tbody> via JS. table-responsive scrolls sideways on
-                 narrow screens; scroll-table caps the height so rows scroll
-                 (header stays pinned). -->
+            <!-- rows go in tbody via js; scroll-table caps height + pins header -->
             <div class="table-responsive scroll-table">
               <table class="table table-striped align-middle">
                 <thead>
@@ -135,7 +131,6 @@
                   </tr>
                 </thead>
                 <tbody id="vehicles-tbody">
-                  <!-- vehicle rows rendered here by JS -->
                   <tr>
                     <td>Loading…</td>
                     <td></td>
@@ -149,14 +144,14 @@
             </div>
           </section>
 
-          <!-- Detail view: filled when a vehicle's "View" is clicked. -->
+          <!-- detail view: filled when a row's "view" is clicked -->
           <section class="border rounded p-3 mb-4">
             <h2>Vehicle Details</h2>
             <p id="detail-empty" class="text-muted">
               Select a vehicle above to see its details.
             </p>
 
-            <!-- Hidden until a vehicle is selected (JS toggles d-none). -->
+            <!-- hidden until a vehicle is picked (js toggles d-none) -->
             <div id="detail-body" class="d-none">
               <dl class="row mb-3">
                 <dt class="col-sm-3">Nickname</dt>
@@ -173,8 +168,7 @@
                 <dd class="col-sm-9" id="detail-status"></dd>
               </dl>
 
-              <!-- Quick mileage update (PATCH). Its own little form so it
-                   doesn't submit the big add/edit form on the right. -->
+              <!-- own little form so it doesn't submit the big add/edit form -->
               <form id="mileage-form" class="row g-2 align-items-end mb-3">
                 <div class="col-auto">
                   <label for="mileage-input" class="form-label"
@@ -205,12 +199,12 @@
           </section>
         </div>
 
+
         <!-- ===================== RIGHT COLUMN (sidebar) ===================== -->
         <div class="col-md-4">
-          <!-- Add/Edit form. One form does both: empty = add (POST); clicking
-               Edit fills it and switches to update (PUT). Wired in JS. -->
+          <!-- one form does add + edit: empty = add (post), filled = update (put) -->
           <section class="border rounded p-3">
-            <!-- Heading swapped by JS: "Add a Vehicle" <-> "Edit Vehicle". -->
+            <!-- heading swapped by js between add/edit -->
             <h2 id="form-heading">Add a Vehicle</h2>
             <form id="vehicle-form">
               <div class="mb-3">
@@ -265,12 +259,11 @@
                 </select>
               </div>
 
-              <!-- Submit text swapped by JS: "Save" (add) <-> "Update" (edit). -->
+              <!-- submit text swapped by js: save (add) / update (edit) -->
               <button type="submit" id="form-submit" class="btn btn-primary">
                 Save
               </button>
-              <!-- Only shown in edit mode (JS removes d-none); clears the form
-                   and returns to add mode. type="button" so it doesn't submit. -->
+              <!-- only shown in edit mode; clears form back to add -->
               <button
                 type="button"
                 id="form-cancel"
@@ -279,8 +272,7 @@
                 Cancel
               </button>
 
-              <!-- One shared error line: the front-end gate's message or the
-                   error the backend sends on a 400. Cleared on a good save. -->
+              <!-- shared error line (front-end gate or backend 400) -->
               <p id="form-error" class="text-danger mt-2"></p>
             </form>
           </section>

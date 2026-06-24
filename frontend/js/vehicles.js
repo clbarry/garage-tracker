@@ -1,11 +1,8 @@
 // js/vehicles.js
-// All the browser logic for vehicles.html. Loaded with `defer`, so the whole
-// page is parsed before this runs and we can grab elements right away.
-//
-// It talks to the backend only with fetch + JSON: the server sends data, the
-// browser builds the HTML (client-side rendering). What it does: list vehicles
-// and render the table, run the search/filter form, drive the add/edit form
-// (POST or PUT), show a vehicle's details, update mileage (PATCH), and delete.
+// browser logic for vehicles.html, loaded with defer so the page is parsed
+// first. talks to the backend with fetch + json (server sends data, browser
+// builds the html). lists vehicles, runs the search/filter form, drives the
+// add/edit form (post or put), shows details, updates mileage (patch), deletes.
 
 const API = "/api/vehicles";
 
@@ -55,16 +52,16 @@ const detailMessage = document.getElementById("detail-message");
 const mileageForm = document.getElementById("mileage-form");
 const mileageInput = document.getElementById("mileage-input");
 
-// State we remember between clicks.
-let editingId = null; // null = the add/edit form is in "add" mode
-let selectedId = null; // the vehicle currently shown in the detail view
+// remembered between clicks
+let editingId = null; // null = form is adding, not editing
+let selectedId = null; // vehicle shown in the detail view
 
 /*=============================================
 =                 Fetch helper                =
 =============================================*/
 
-// One wrapper around fetch so every call parses JSON and throws a useful Error
-// on a non-2xx response (callers show error.message). 204 = no body.
+// one fetch wrapper: parses json and throws the backend's message on a non-2xx.
+// 204 = no body
 async function request(path, options) {
   const res = await fetch(path, options);
   if (res.status === 204) {
@@ -89,12 +86,12 @@ function formatMoney(n) {
   return "$" + Number(n).toLocaleString();
 }
 
-// Map a status to its CSS modifier class, e.g. "In Repair" -> "status-in-repair".
+// "In Repair" -> "status-in-repair"
 function statusClass(status) {
   return "status-" + status.toLowerCase().replace(/\s+/g, "-");
 }
 
-// Build a coloured status pill element (base class + modifier).
+// coloured status pill (base class + modifier)
 function statusBadge(status) {
   const span = document.createElement("span");
   span.className = "status-badge " + statusClass(status);
@@ -107,7 +104,7 @@ function statusBadge(status) {
 =============================================*/
 
 function renderVehicles(vehicles) {
-  tbody.replaceChildren(); // clear old rows (and the "Loading…" placeholder)
+  tbody.replaceChildren(); // clear old rows + the loading placeholder
 
   if (vehicles.length === 0) {
     const tr = document.createElement("tr");
@@ -123,7 +120,7 @@ function renderVehicles(vehicles) {
   for (const v of vehicles) {
     const tr = document.createElement("tr");
 
-    // Vehicle: nickname (bold) with make + model under it.
+    // nickname bold, make + model under it
     const nameCell = document.createElement("td");
     const strong = document.createElement("strong");
     strong.textContent = v.nickname;
@@ -144,7 +141,7 @@ function renderVehicles(vehicles) {
     const statusCell = document.createElement("td");
     statusCell.appendChild(statusBadge(v.status));
 
-    // Actions: View / Edit / Delete, each with its own click handler.
+    // view / edit / delete, each with its own handler
     const actionCell = document.createElement("td");
     actionCell.className = "row-actions";
     actionCell.append(
@@ -168,7 +165,7 @@ function renderVehicles(vehicles) {
     vehicles.length + (vehicles.length === 1 ? " vehicle" : " vehicles");
 }
 
-// Small factory for a Bootstrap-styled action button with a click handler.
+// bootstrap-styled button + click handler
 function actionButton(label, variant, onClick) {
   const btn = document.createElement("button");
   btn.type = "button";
@@ -182,8 +179,7 @@ function actionButton(label, variant, onClick) {
 =             Load + filter the list          =
 =============================================*/
 
-// Read the filter form into a params object (only non-empty values), so the
-// query string carries exactly the filters the user set.
+// read the filter form into a params object (skip empty fields)
 function currentFilters() {
   const params = {};
   if (filterQ.value.trim()) {
@@ -211,8 +207,8 @@ async function loadVehicles(params = {}) {
   }
 }
 
-// Fill the make filter's datalist with the distinct makes in the database.
-// Done from the FULL list so the suggestions don't shrink as you filter.
+// fill the make datalist from the full list so the suggestions don't shrink as
+// you filter
 async function refreshMakeOptions() {
   try {
     const all = await request(API);
@@ -224,7 +220,7 @@ async function refreshMakeOptions() {
       makeOptions.appendChild(opt);
     }
   } catch {
-    // Non-fatal: the make box still works as free text without suggestions.
+    // non-fatal: the make box still works as free text
   }
 }
 
@@ -262,7 +258,7 @@ vehicleForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   formError.textContent = "";
 
-  // Gather the form into a plain object; the backend validates the details.
+  // gather the form; the backend does the real validation
   const body = {
     nickname: formFields.nickname.value,
     make: formFields.make.value,
@@ -273,7 +269,7 @@ vehicleForm.addEventListener("submit", async (event) => {
     status: formFields.status.value,
   };
 
-  // editingId decides add (POST) vs update (PUT) — one form, two modes.
+  // editingId picks add (post) vs update (put)
   const options = {
     method: editingId ? "PUT" : "POST",
     headers: { "Content-Type": "application/json" },
@@ -284,10 +280,10 @@ vehicleForm.addEventListener("submit", async (event) => {
   try {
     await request(path, options);
     resetForm();
-    await refreshMakeOptions(); // a new make may now exist
+    await refreshMakeOptions(); // a new make might exist now
     await loadVehicles(currentFilters());
   } catch (error) {
-    formError.textContent = error.message; // show the backend's 400 message
+    formError.textContent = error.message; // show the backend's 400
   }
 });
 
@@ -319,7 +315,7 @@ async function showDetail(id) {
   }
 }
 
-// Quick mileage update (PATCH) without opening the full edit form.
+// quick mileage update (patch), no full edit form
 mileageForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   if (!selectedId) {
@@ -341,7 +337,7 @@ mileageForm.addEventListener("submit", async (event) => {
   }
 });
 
-// "Edit this vehicle" from the detail view: load it and fill the form.
+// edit from the detail view: load the vehicle and fill the form
 detailEdit.addEventListener("click", async () => {
   if (!selectedId) {
     return;
@@ -382,13 +378,13 @@ async function removeVehicleById(id, fromDetail) {
   }
   try {
     await request(`${API}/${id}`, { method: "DELETE" });
-    // If the deleted vehicle was open in the detail view, close it.
+    // close the detail view if this was the open vehicle
     if (selectedId === id) {
       selectedId = null;
       detailBody.classList.add("d-none");
       detailEmpty.classList.remove("d-none");
     }
-    // If it was being edited, reset the form.
+    // reset the form if this was the one being edited
     if (editingId === id) {
       resetForm();
     }
@@ -413,6 +409,6 @@ filterReset.addEventListener("click", () => {
   loadVehicles({});
 });
 
-// First load: fill the make suggestions, then show all vehicles.
+// first load: fill make suggestions, then show everything
 refreshMakeOptions();
 loadVehicles({});
