@@ -35,7 +35,7 @@ Garage Tracker is built for CS5610 Web Development at Northeastern University. I
 - Filters: vehicle, service type, cost range, date range (combinable)
 - Sortable table columns (vehicle, date, type, mileage, cost, shop, rating)
 - "Other" service type requires a notes entry
-- Green success highlight on form fields after a successful save
+- Both Red error and Green success highlight on form fields after a successful save or error
 
 **Summary Reports**
 - Spend by Vehicle — total cost and service count per vehicle, sortable
@@ -101,11 +101,11 @@ This app runs locally against a MongoDB instance. We use MongoDB in Docker.
 
 ### Vehicles ("Your Garage")
 
-![Vehicles page](./images/services-page.jpeg)
+![Vehicles page](./images/vehicles-page.jpeg)
 
 ### Services (Maintenance History & Costs)
 
-![Services page](./images/vehicles-page.jpeg)
+![Services page](./images/services-page.jpeg)
 
 ---
 
@@ -221,7 +221,7 @@ This section discloses where generative AI was used in this project. We used Cla
 
 1. **Seed data generation.** Sample data for both collections was generated with [Mockaroo](https://www.mockaroo.com/). Claude was used to help write the `data/loadServices.js` and `data/loadVehicles.js` scripts that load the JSON files into MongoDB.
 
-2. **Vehicles feature — scaffolding and debugging.** Claude was used as a coding aid to scaffold the Vehicles files to match the existing Services pattern (`db/vehiclesDb.js`, `routes/vehicles.js`, `frontend/vehicles.*`) and to help debug along the way. All decisions, validation rules, API design, and final code were reviewed and understood by the team.
+2. **Scaffolding and debugging.** Claude was used as a coding aid to scaffold and match the Vehicles and Services files and to help debug along the way. All decisions, validation rules, API design, and final code were reviewed and understood by the team.
 
 3. **Build guidance.** Claude was used throughout the project to talk through Express/MongoDB concepts and review approach. All implementation choices were made and verified by the team.
 
