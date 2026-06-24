@@ -209,12 +209,14 @@ This project was created as part of the **Web Development Course (Summer 2026)**
 
 ---
 
-## Project Submission
+## Project Submissions
 
-This repository is a course project submission for CS5610 Web Development at Northeastern University. It demonstrates a full-stack CRUD application using Node.js, Express, and MongoDB with a client-side-rendered vanilla JavaScript frontend.
+- **Design document:** ADD here
+- **Slide deck:** [Google Slides](https://docs.google.com/presentation/d/1pOnxiB1SWecKU4c5VWdYlalRbR9mQkMB/edit?slide=id.p1#slide=id.p1)
+- **Video presentation:** ADD HERE
+- **Thumbnail image:** ADD HERE
 
 ---
-
 ## Use of GenAI Tools
 
 This section discloses where generative AI was used in this project. We used Claude Opus 4.8 model.
